@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Tracker</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f2f7; margin: 0; padding: 20px; color: #1c1c1e; }
+        h1 { font-size: 24px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .form-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 10px; }
+        .day-box { width: 14px; height: 14px; border-radius: 3px; background: #e5e5ea; }
+        button { width: 100%; background: #007aff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>I Miei Tracker</h1>
+    
+    <div class="card">
+        <h3>Registra Oggi</h3>
+        <div class="form-group">
+            <label>Qualità Sonno (1-5):</label>
+            <input type="number" id="sleepVal" min="1" max="5" value="4" style="width: 50px;">
+        </div>
+        <div class="form-group">
+            <label>Allenamento Fatto:</label>
+            <input type="checkbox" id="workoutVal">
+        </div>
+        <button onclick="saveData()">Salva Giornata</button>
+    </div>
+
+    <div class="card">
+        <h3>Qualità Sonno</h3>
+        <div class="grid" id="sleepGrid"></div>
+    </div>
+
+    <div class="card">
+        <h3>Allenamento</h3>
+        <div class="grid" id="workoutGrid"></div>
+    </div>
+
+    <script>
+        function saveData() {
+            const today = new Date().toISOString().split('T')[0];
+            const sleep = document.getElementById('sleepVal').value;
+            const workout = document.getElementById('workoutVal').checked;
+            
+            let data = JSON.parse(localStorage.getItem('trackerData') || '{}');
+            data[today] = { sleep: parseInt(sleep), workout: workout };
+            localStorage.setItem('trackerData', JSON.stringify(data));
+            renderGrids();
+        }
+
+        function renderGrids() {
+            const data = JSON.parse(localStorage.getItem('trackerData') || '{}');
+            const sleepGrid = document.getElementById('sleepGrid');
+            const workoutGrid = document.getElementById('workoutGrid');
+            sleepGrid.innerHTML = ''; workoutGrid.innerHTML = '';
+
+            for (let i = 29; i >= 0; i--) {
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                let dateStr = d.toISOString().split('T')[0];
+                let entry = data[dateStr] || {};
+
+                // Cella Sonno
+                let sBox = document.createElement('div');
+                sBox.className = 'day-box';
+                if (entry.sleep) sBox.style.background = `rgba(88, 86, 214, ${entry.sleep / 5})`;
+                sleepGrid.appendChild(sBox);
+
+                // Cella Allenamento
+                let wBox = document.createElement('div');
+                wBox.className = 'day-box';
+                if (entry.workout) wBox.style.background = '#34c759';
+                workoutGrid.appendChild(wBox);
+            }
+        }
+        renderGrids();
+    </script>
+</body>
+</html>
